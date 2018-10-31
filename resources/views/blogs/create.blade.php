@@ -1,6 +1,17 @@
 @extends('layouts.app')
 
+@push('custom-js')
+    <script src='{{URL::to('src\vendor\tinymce\js\tinymce\tinymce.min.js')}}'></script>
+    {{--<script>
+        tinymce.init({
+            selector: '#mytextarea'
+        });
+    </script>--}}
+@endpush
+
 @section('content')
+
+    @include('layouts.tinymce')
     <div class="container-fluid">
         <div class="jumbotron">
             <h1>Create a new blog</h1>
@@ -8,13 +19,16 @@
         <div class="col-md-12">
             <form action="{{route('blog.store')}}" method="post" enctype="multipart/form-data">
                 @csrf
+
+
                 <div class="form-group">
                     <label for="title">Title</label>
                     <input type="text" name="title" class="form-control">
                 </div>
-                <div class="form-group">
+                <div  class="form-group">
                     <label for="body">Body</label>
-                    <textarea name="body" class="form-control"></textarea>
+                    <textarea name="body" class="form-control my-editor">{!! old('body') !!}</textarea>
+                  {{--  <textarea id="mytextarea"  name="body" class="form-control "></textarea>--}}
                 </div>
                 <div class="form-group form-check form-check-inline">
                     @foreach($categories as $category)
@@ -32,4 +46,13 @@
             </form>
         </div>
     </div>
+
 @endsection
+@push('custom-scripts')
+    <script>
+        $(document).ready(function() {
+            $('#summernote').summernote();
+        });
+    </script>
+@endpush
+

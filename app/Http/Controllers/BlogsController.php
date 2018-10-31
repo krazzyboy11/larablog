@@ -8,8 +8,14 @@ use Illuminate\Http\Request;
 
 class BlogsController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('author',['only'=>['create','store','edit','update']]);
+        $this->middleware('admin',['only'=>['delete','trash','restore','permanentDelete']]);
+    }
+
     public function index(){
-        $blogs = Blog::latest()->get();
+        $blogs = Blog::where('status',1)->latest()->get();
         return view('blogs.index', compact('blogs'));
     }
     public function create(){
@@ -18,15 +24,19 @@ class BlogsController extends Controller
     }
     public function store(Request $request){
         $input = $request->all();
+        $input['slug'] =str_slug($request->title);
+        $input['meta_title'] =str_limit($request->title,55);
+        $input['meta_description'] =str_limit($request->body, 155);
         if ($file= $request->file('featured_image')){
             $name= uniqid() . $file->getClientOriginalName();
             $file->move('images/featured_image/', $name);
             $input['featured_image']= $name;
         }
-        $blog=Blog::create($input);
+        //$blog=Blog::create($input);
+        $blogByUser = $request->user()->blogs()->create($input);
 
         if ($request->category_id){
-            $blog->category()->sync($request->category_id);
+            $blogByUser->category()->sync($request->category_id);
         }
        /* $blog= new Blog();
         $blog->title=$request->title;
